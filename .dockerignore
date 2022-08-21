@@ -1,0 +1,7 @@
+# ignore Docker build files
+Dockerfile
+.dockerignore
+
+# other files
+.gitignore
+README.md

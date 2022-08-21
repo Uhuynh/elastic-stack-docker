@@ -1,0 +1,238 @@
+version: "3.7"
+
+services:
+
+  # The 'setup' service runs a one-off script which initializes the
+  # 'logstash_internal' and 'kibana_system' users inside Elasticsearch with the
+  # values of the passwords defined in .env
+  #
+  # This task is only performed during the *initial* startup of the stack. On all
+  # subsequent runs, the service simply returns immediately, without performing
+  # any modification to existing users.
+  setup:
+    build:
+      context: .
+      dockerfile: setup/elasticsearch/Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.2.0}
+    container_name: setup
+    volumes:
+      - setup:/state
+      - ./certs/ca/ca.crt:/usr/share/elasticsearch/config/ca/ca.crt:ro
+    environment:
+      SETUP_TASK: "es-initialize"
+
+  es01:
+    build:
+      context: .
+      dockerfile: elasticsearch/Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.2.0}
+    container_name: es01
+#    restart: unless-stopped
+    secrets:
+      - source: ca.crt
+        target: /usr/share/elasticsearch/config/certs/ca/ca.crt
+      - source: es01.crt
+        target: /usr/share/elasticsearch/config/certs/es01/es01.crt
+      - source: es01.key
+        target: /usr/share/elasticsearch/config/certs/es01/es01.key
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./elasticsearch/config/saml/Jeffrey-Test.xml:/usr/share/elasticsearch/config/saml/Jeffrey-Test.xml:ro
+      - es01_data:/usr/share/elasticsearch/data
+    ports:
+      - 0.0.0.0:${ELASTICSEARCH_TRANSPORT_PORT:-9200}:9200
+      - 0.0.0.0:${ELASTICSEARCH_HTTP_PORT:-9300}:9300
+    environment:
+      ES_HOST: ${ES_NODE_1_HOST:-es01}
+      ES_DISCOVERY_SEED_HOST_1: ${ES_NODE_2_HOST:-es02}
+      ES_DISCOVERY_SEED_HOST_2: ${ES_NODE_3_HOST:-es03}
+      ES_JAVA_OPTS: "-Xmx${ES_HEAP:-512m} -Xms${ES_HEAP:-512m}"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  es02:
+    depends_on:
+      - es01
+    build:
+      context: .
+      dockerfile: elasticsearch/Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.2.0}
+    container_name: es02
+#    restart: unless-stopped
+    secrets:
+      - source: ca.crt
+        target: /usr/share/elasticsearch/config/certs/ca/ca.crt
+      - source: es02.crt
+        target: /usr/share/elasticsearch/config/certs/es02/es02.crt
+      - source: es02.key
+        target: /usr/share/elasticsearch/config/certs/es02/es02.key
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./elasticsearch/config/saml/Jeffrey-Test.xml:/usr/share/elasticsearch/config/saml/Jeffrey-Test.xml:ro
+      - es02_data:/usr/share/elasticsearch/data
+    environment:
+      ES_HOST: ${ES_NODE_2_HOST:-es02}
+      ES_DISCOVERY_SEED_HOST_1: ${ES_NODE_1_HOST:-es01}
+      ES_DISCOVERY_SEED_HOST_2: ${ES_NODE_3_HOST:-es03}
+      ES_JAVA_OPTS: "-Xmx${ES_HEAP:-512m} -Xms${ES_HEAP:-512m}"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  es03:
+    depends_on:
+      - es02
+    build:
+      context: .
+      dockerfile: elasticsearch/Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.2.0}
+    container_name: es03
+#    restart: unless-stopped
+    secrets:
+      - source: ca.crt
+        target: /usr/share/elasticsearch/config/certs/ca/ca.crt
+      - source: es03.crt
+        target: /usr/share/elasticsearch/config/certs/es03/es03.crt
+      - source: es03.key
+        target: /usr/share/elasticsearch/config/certs/es03/es03.key
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./elasticsearch/config/saml/Jeffrey-Test.xml:/usr/share/elasticsearch/config/saml/Jeffrey-Test.xml:ro
+      - es03_data:/usr/share/elasticsearch/data
+    environment:
+      ES_HOST: ${ES_NODE_3_HOST:-es03}
+      ES_DISCOVERY_SEED_HOST_1: ${ES_NODE_1_HOST:-es01}
+      ES_DISCOVERY_SEED_HOST_2: ${ES_NODE_2_HOST:-es02}
+      ES_JAVA_OPTS: "-Xmx${ES_HEAP:-512m} -Xms${ES_HEAP:-512m}"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  kibana:
+    depends_on:
+      - es01
+      - es02
+      - es03
+    build:
+      context: .
+      dockerfile: kibana/Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.2.0}
+    container_name: kibana
+#    restart: unless-stopped
+    secrets:
+      - source: ca.crt
+        target: /usr/share/kibana/config/certs/ca/ca.crt
+      - source: kibana.crt
+        target: /usr/share/kibana/config/certs/kibana/kibana.crt
+      - source: kibana.key
+        target: /usr/share/kibana/config/certs/kibana/kibana.key
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - kibana_data:/usr/share/kibana/data
+    ports:
+      - 0.0.0.0:${KIBANA_PORT:-14000}:5601
+    environment:
+      ES_HOST: https://${ES_NODE_1_HOST:-es01}:9200
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  logstash:
+    depends_on:
+      - es01
+      - es02
+      - es03
+    build:
+      context: .
+      dockerfile: logstash/Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.2.0}
+    container_name: logstash
+#    restart: unless-stopped
+    secrets:
+      - source: ca.crt
+        target: /usr/share/logstash/config/certs/ca/ca.crt
+    ports:
+      - 0.0.0.0:${LOGSTASH_TCP_PORT:-5000}:5000
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logstash/jdbc_drivers:/usr/share/logstash/data/jdbc_drivers:ro
+      - /home/gitlab-runner/jeffrey-media/ftclogs/log.log:/usr/share/logstash/data/solidvest_log.log:ro
+      - logstash_data:/usr/share/logstash/data
+    environment:
+      ELASTICSEARCH_HOST: https://${ES_NODE_1_HOST:-es01}:9200
+      LS_JAVA_OPTS: "-Xmx${LOGSTASH_HEAP:-512m} -Xms${LOGSTASH_HEAP:-512m}"
+
+volumes:
+  setup:
+  es01_data:
+  es02_data:
+  es03_data:
+  kibana_data:
+  logstash_data:
+
+secrets:
+  ca.crt:
+    file: certs/ca/ca.crt
+  es01.crt:
+    file: certs/es01/es01.crt
+  es01.key:
+    file: certs/es01/es01.key
+  es02.crt:
+    file: certs/es02/es02.crt
+  es02.key:
+    file: certs/es02/es02.key
+  es03.crt:
+    file: certs/es03/es03.crt
+  es03.key:
+    file: certs/es03/es03.key
+  kibana.crt:
+    file: certs/_.cloud.dje-intern.de.crt
+#    file: certs/kibana/kibana.crt
+  kibana.key:
+    file: certs/_.cloud.dje-intern.de.key
+#    file: certs/kibana/kibana.key

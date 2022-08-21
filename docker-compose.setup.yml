@@ -1,0 +1,43 @@
+version: "3.7"
+
+services:
+
+  # The service creates Elasticsearch Certificate Authority (CA)
+  # and certificates for each ES node signed by that CA.
+  #
+  # Generated certificates and keys are stored in ./certs
+  #
+  # If certs already exist then the service exits immediately.
+  es_certs:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.2.0}
+    container_name: setup_es_certs
+    command: bash /certs.sh
+    user: "0"
+    volumes:
+      - ./certs:/certs
+      - ./setup/elasticsearch/certs.sh:/certs.sh
+
+  # The service creates Elasticsearch keystore, which is used to store
+  # Azure Storage Account access key.
+  #
+  # This is explicitly required by Elasticsearch (container env vars
+  # will not be considered for setting up  connection from Elasticsearch
+  # to Azure Storage Account).
+  #
+  # The generated keystore will be saved under ./elasticsearch/config
+  # and then bind mounted to each of the  Elasticsearch node in docker-compose.yml.
+  # Note: this keystore should not be committed to git.
+  #
+  # If the Keystore already exists then the service exits immediately.
+  es_keystore:
+    build:
+      context: .
+      dockerfile: setup/elasticsearch/Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.2.0}
+    container_name: es_keystore
+    user: "0"
+    volumes:
+      - ./elasticsearch/config:/opt/config
+    environment:
+      SETUP_TASK: "es-keystore"

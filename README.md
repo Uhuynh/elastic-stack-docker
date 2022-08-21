@@ -1,2 +1,2 @@
 # elastic-stack-docker
-Elasticsearch - Kibana - Logstash with Docker
+Elasticsearch - Kibana - Logstash on Docker

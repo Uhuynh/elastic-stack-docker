@@ -1,0 +1,9 @@
+{
+  "type": "azure",
+  "settings": {
+    "client": "default",
+    "container": "djesvcelk",
+    "compress": true,
+    "location_mode": "primary_only"
+  }
+}
