@@ -11,7 +11,7 @@ else
   echo "Certificate Authority exists. Skipping"
 fi
 
-# generate certs and keys for Elasticsearch nodes and Kibana signed by previously created CA
+# generate certs and keys for Elasticsearch nodes, signed by previously created CA
 if [[ ! -f /certs/es01/es01.crt ]]; then
   echo "Creating certs..."
   echo -ne \
@@ -32,14 +32,6 @@ if [[ ! -f /certs/es01/es01.crt ]]; then
   "    dns:\n"\
   "      - es03\n"\
   "      - localhost\n"\
-  "    ip:\n"\
-  "      - 127.0.0.1\n"\
-  "  - name: kibana\n"\
-  "    dns:\n"\
-  "      - kibana\n"\
-  "      - localhost\n"\
-  "      - 0.0.0.0\n"\
-  "      - *.cloud.dje-intern.de\n"\
   "    ip:\n"\
   "      - 127.0.0.1\n"\
   > /certs/instances.yml

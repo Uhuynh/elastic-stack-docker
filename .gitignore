@@ -1,2 +1,6 @@
-/.idea
-/elasticsearch/config/elasticsearch.keystore
+/.idea/
+/certs/ca/
+/certs/es01/
+/certs/es02/
+/certs/es03/
+/certs/instances.yml
