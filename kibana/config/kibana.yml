@@ -20,30 +20,9 @@ elasticsearch.password: ${KIBANA_SYSTEM_PASSWORD}
 #
 elasticsearch.ssl.certificateAuthorities: config/certs/ca/ca.crt
 
-## Encrypt traffic between Kibana and browser
-## see https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup-https.html#encrypt-kibana-browser
-
-server.ssl.enabled: true
-server.ssl.certificate: config/certs/kibana/kibana.crt
-server.ssl.key: config/certs/kibana/kibana.key
-
 ## activate Kibana alerts feature
 xpack.encryptedSavedObjects.encryptionKey: ${KIBANA_XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY}
 xpack.actions.preconfiguredAlertHistoryEsIndex: true
-
-## configuration for production environment
-#server.publicBaseUrl: https://elk.cloud.dje-intern.de:14000
-server.publicBaseUrl: https://elk.cloud.dje-intern.de
-
-## saml configuration
-xpack.security.authc.providers:
-  saml.saml1:
-    order: 0
-    realm: "saml1"
-    description: "Log in with Azure AD"
-  basic.basic1:
-    order: 1
-
 
 # enable reporting feature (generate csv, pdf, ...)
 # https://www.elastic.co/guide/en/kibana/current/reporting-settings-kb.html#general-reporting-settings

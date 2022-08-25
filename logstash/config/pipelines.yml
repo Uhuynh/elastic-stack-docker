@@ -1,11 +1,5 @@
 # The value of a setting that is not explicitly set in the pipelines.yml file
 # will fall back to the default specified in the logstash.yml.
 # see https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
-- pipeline.id: goanywhere_logs
-  path.config: "/usr/share/logstash/pipeline/goanywhere_logs.conf"
 - pipeline.id: columbo_logs
   path.config: "/usr/share/logstash/pipeline/columbo_logs.conf"
-- pipeline.id: jeffrey_logs
-  path.config: "/usr/share/logstash/pipeline/jeffrey_logs.conf"
-- pipeline.id: solidvest_log_log
-  path.config: "/usr/share/logstash/pipeline/solidvest_log_log.conf"

@@ -60,32 +60,3 @@ xpack.security.http.ssl.verification_mode: certificate
 xpack.security.http.ssl.key: certs/${ES_HOST}/${ES_HOST}.key
 xpack.security.http.ssl.certificate: certs/${ES_HOST}/${ES_HOST}.crt
 xpack.security.http.ssl.certificate_authorities: certs/ca/ca.crt
-
-#
-# Azure snapshot repository settings
-#
-
-# secure settings (account and key) must be stored in the keystore
-azure.client.default.timeout: 10s
-azure.client.default.max_retries: 7
-azure.client.default.endpoint_suffix: core.windows.net
-
-#
-# SAML single-sign-on
-# https://www.elastic.co/guide/en/elasticsearch/reference/current/saml-guide-stack.html
-#
-
-# enable token service
-xpack.security.authc.token.enabled: true
-
-# create a SAML realm
-xpack.security.authc.realms.saml.saml1:
-  order: 2
-  idp.metadata.path: saml/Jeffrey-Test.xml
-  idp.entity_id: "https://sts.windows.net/2407f5a1-de4b-4c0c-b30e-9cd9790f6d6c/"
-  sp.entity_id:  "https://elk.cloud.dje-intern.de"
-  sp.acs: "https://elk.cloud.dje-intern.de/api/security/saml/callback"
-  sp.logout: "https://elk.cloud.dje-intern.de/logout"
-  attributes.principal: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-  attributes.groups: "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-  attributes.mail: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"

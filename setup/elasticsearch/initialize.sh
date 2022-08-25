@@ -2,7 +2,6 @@
 set -euo pipefail
 
 echo "$(dirname ${BASH_SOURCE[0]})"
-#state_file="$(dirname ${BASH_SOURCE[0]})/state/.done"
 state_file=/state/.done
 if [[ -e "$state_file" ]]; then
 	echo "State file exists at '${state_file}', skipping initialization step"
@@ -100,25 +99,6 @@ for user in "${!users_passwords[@]}"; do
 		create_user "$es_url" "$cacert" "$user" "${users_passwords[$user]}" "${users_roles[$user]}"
 	fi
 done
-
-# --------------------------------------------------------
-# Ensure that an Azure snapshot repository exists, create
-# or update it if required
-repository_body_file="$(dirname "${BASH_SOURCE[0]}")/snapshot_repository/azure_repository.json"
-repository_name="elk"
-echo "Register a snapshot repository"
-register_snapshot_repository "$es_url" "$cacert" "$repository_name" "$(<"${repository_body_file}")"
-
-# create an SLM policy
-slm_policy_body_file="$(dirname "${BASH_SOURCE[0]}")/snapshot_repository/slm_policy.json"
-slm_policy_id="elk-slm-policy"
-echo "Create an SLM policy"
-create_slm_policy "$es_url" "$cacert" "$slm_policy_id" "$(<"${slm_policy_body_file}")"
-
-# create an SLM retention task to automatically remove redundant snapshots
-slm_retention_body_file="$(dirname "${BASH_SOURCE[0]}")/snapshot_repository/slm_retention.json"
-echo "Create an SLM retention task"
-create_slm_retention "$es_url" "$cacert" "$(<"${slm_retention_body_file}")"
 
 # --------------------------------------------------------
 # write to state file .done

@@ -19,8 +19,6 @@ services:
     volumes:
       - setup:/state
       - ./certs/ca/ca.crt:/usr/share/elasticsearch/config/ca/ca.crt:ro
-    environment:
-      SETUP_TASK: "es-initialize"
 
   es01:
     build:
@@ -38,7 +36,6 @@ services:
         target: /usr/share/elasticsearch/config/certs/es01/es01.key
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-      - ./elasticsearch/config/saml/Jeffrey-Test.xml:/usr/share/elasticsearch/config/saml/Jeffrey-Test.xml:ro
       - es01_data:/usr/share/elasticsearch/data
     ports:
       - 0.0.0.0:${ELASTICSEARCH_TRANSPORT_PORT}:9200
@@ -110,7 +107,6 @@ services:
       args:
         ELASTIC_VERSION: ${ELASTIC_VERSION}
     container_name: es03
-#    restart: unless-stopped
     secrets:
       - source: ca.crt
         target: /usr/share/elasticsearch/config/certs/ca/ca.crt
@@ -193,7 +189,6 @@ services:
       - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
       - ./logstash/jdbc_drivers:/usr/share/logstash/data/jdbc_drivers:ro
-      - /home/gitlab-runner/jeffrey-media/ftclogs/log.log:/usr/share/logstash/data/solidvest_log.log:ro
       - logstash_data:/usr/share/logstash/data
     environment:
       ELASTICSEARCH_HOST: https://${ES_NODE_1_HOST}:9200
