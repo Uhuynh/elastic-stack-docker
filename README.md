@@ -1,5 +1,5 @@
 # elastic-stack-docker
-Elasticsearch - Kibana - Logstash on Docker
+Elasticsearch - Kibana - Logstash on Docker (`v8.4.0`)
 
 
 - Main idea is to start a simple ready-to-deploy ELK stack.
