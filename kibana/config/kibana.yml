@@ -19,13 +19,3 @@ elasticsearch.password: ${KIBANA_SYSTEM_PASSWORD}
 ## see https://www.elastic.co/guide/en/kibana/current/configuring-tls.html#configuring-tls-kib-es
 #
 elasticsearch.ssl.certificateAuthorities: config/certs/ca/ca.crt
-
-## activate Kibana alerts feature
-xpack.encryptedSavedObjects.encryptionKey: ${KIBANA_XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY}
-xpack.actions.preconfiguredAlertHistoryEsIndex: true
-
-# enable reporting feature (generate csv, pdf, ...)
-# https://www.elastic.co/guide/en/kibana/current/reporting-settings-kb.html#general-reporting-settings
-xpack.reporting.enabled: true
-xpack.reporting.encryptionKey: ${KIBANA_XPACK_REPORTING_ENCRYPTIONKEY}
-xpack.reporting.capture.browser.chromium.disableSandbox: true
