@@ -1,5 +1,5 @@
 # The value of a setting that is not explicitly set in the pipelines.yml file
 # will fall back to the default specified in the logstash.yml.
 # see https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
-- pipeline.id: columbo_logs
-  path.config: "/usr/share/logstash/pipeline/columbo_logs.conf"
+- pipeline.id: jdbc_logs
+  path.config: "/usr/share/logstash/pipeline/jdbc_logs.conf"
