@@ -36,9 +36,4 @@ echo "Setting file permissions"
 chown -R root:root /certs;
 find . -type d -exec chmod 750 \{\} \;;
 find . -type f -exec chmod 640 \{\} \;;
-
-#echo "Setting file permissions..."
-#chown -R 1000:0 /certs
-#find /certs -type d -exec chmod 754 \{\} \;;
-#find /certs -type f -exec chmod 644 \{\} \;;
 echo "Setup certs done!"
