@@ -13,18 +13,3 @@ xpack.monitoring.elasticsearch.password: ${LOGSTASH_SYSTEM_PASSWORD}
 ## Legacy monitoring data collection
 # see https://www.elastic.co/guide/en/logstash/current/monitoring-internal-collection-legacy.html
 xpack.monitoring.elasticsearch.ssl.certificate_authority: config/certs/ca/ca.crt
-
-## Persistent queue
-# see https://www.elastic.co/guide/en/logstash/current/persistent-queues.html
-# the value you set is applied per pipeline rather than a total to be shared among all pipelines.
-queue.type: persisted
-path.queue: data/queue
-queue.page_capacity: 64mb
-queue.max_bytes: 1024mb
-
-## Dead letter queue
-# see https://www.elastic.co/guide/en/logstash/current/dead-letter-queues.html#dlq-clear
-dead_letter_queue.enable: true
-path.dead_letter_queue: data/dead_letter_queue
-dead_letter_queue.flush_interval: 5000
-dead_letter_queue.max_bytes: 1024mb

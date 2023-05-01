@@ -1,0 +1,6 @@
+2022-11-02 13:01:00 WARN app > A warn message
+2022-11-03 14:05:00 INFO app > An info message
+2022-11-04 15:03:37 ERROR app > First error message
+2022-11-04 16:03:37 ERROR app > Second error message
+2022-11-04 17:03:37 ERROR app > Third error message
+2022-11-06 12:02:00 DEBUG app > A debug message

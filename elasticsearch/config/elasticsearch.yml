@@ -7,23 +7,15 @@
 #
 
 # nodes form a cluster by having the same cluster name
-cluster.name: central-monitor
+cluster.name: elastic-cluster
 
 # The node name defaults to the hostname of the machine when Elasticsearch starts
 node.name: ${ES_HOST}
 
 network.host: 0.0.0.0
 
-# eligible master nodes to be selected
-cluster.initial_master_nodes:
-  - ${ES_HOST}
-  - ${ES_DISCOVERY_SEED_HOST_1}
-  - ${ES_DISCOVERY_SEED_HOST_2}
-
-# discover and connect to other nodes in the same cluster
-discovery.seed_hosts:
-  - ${ES_DISCOVERY_SEED_HOST_1}
-  - ${ES_DISCOVERY_SEED_HOST_2}
+# instruct Elasticsearch to form a single-node cluster
+discovery.type: single-node
 
 bootstrap.memory_lock: true
 
@@ -54,7 +46,7 @@ xpack.security.transport.ssl.key: certs/${ES_HOST}/${ES_HOST}.key
 xpack.security.transport.ssl.certificate: certs/${ES_HOST}/${ES_HOST}.crt
 xpack.security.transport.ssl.certificate_authorities: certs/ca/ca.crt
 
-# HTTP Protocol (communication between ES and Kibana / Logstash
+# HTTP Protocol (communication between ES and Kibana / Logstash)
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
 xpack.security.http.ssl.key: certs/${ES_HOST}/${ES_HOST}.key

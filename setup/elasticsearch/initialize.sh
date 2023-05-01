@@ -30,7 +30,7 @@ fi
 # --------------------------------------------------------
 # wait for Elasticsearch to start up before doing anything
 echo "Waiting for Elasticsearch availability..."
-es_url=http://elastic:${ELASTIC_PASSWORD}@es01:9200
+es_url=https://elastic:${ELASTIC_PASSWORD}@es:9200
 while [[ "$(curl --cacert $cacert -s -o /dev/null -w '%{http_code}' $es_url)" != "200" ]]; do
     sleep 5
 done
