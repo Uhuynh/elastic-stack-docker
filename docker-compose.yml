@@ -14,41 +14,39 @@ services:
       context: .
       dockerfile: setup/elasticsearch/Dockerfile
       args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.7.0}
     environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD}
-      LOGSTASH_SYSTEM_PASSWORD: ${LOGSTASH_SYSTEM_PASSWORD}
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-elastic-pass}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-kibana-system-pass}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-logstash-internal-pass}
+      LOGSTASH_SYSTEM_PASSWORD: ${LOGSTASH_SYSTEM_PASSWORD:-logstash-system-pass}
     volumes:
       - setup:/state
       - ./certs/ca/ca.crt:/usr/share/elasticsearch/config/ca/ca.crt:ro
 
-  es01:
+  es:
     build:
       context: .
       dockerfile: elasticsearch/Dockerfile
       args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.7.0}
     secrets:
       - source: ca.crt
         target: /usr/share/elasticsearch/config/certs/ca/ca.crt
-      - source: es01.crt
-        target: /usr/share/elasticsearch/config/certs/es01/es01.crt
-      - source: es01.key
-        target: /usr/share/elasticsearch/config/certs/es01/es01.key
+      - source: es.crt
+        target: /usr/share/elasticsearch/config/certs/es/es.crt
+      - source: es.key
+        target: /usr/share/elasticsearch/config/certs/es/es.key
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-      - es01_data:/usr/share/elasticsearch/data
+      - es_data:/usr/share/elasticsearch/data
     ports:
       - 0.0.0.0:${ELASTICSEARCH_TRANSPORT_PORT}:9200
       - 0.0.0.0:${ELASTICSEARCH_HTTP_PORT}:9300
     environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-      ES_HOST: ${ES_NODE_1_HOST}
-      ES_DISCOVERY_SEED_HOST_1: ${ES_NODE_2_HOST}
-      ES_DISCOVERY_SEED_HOST_2: ${ES_NODE_3_HOST}
-      ES_JAVA_OPTS: "-Xmx${ES_HEAP} -Xms${ES_HEAP}"
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-elastic-pass}
+      ES_HOST: ${ES_HOST:-es}
+      ES_JAVA_OPTS: "-Xmx${ES_HEAP:-128m} -Xms${ES_HEAP:-128m}"
     ulimits:
       memlock:
         soft: -1
@@ -62,91 +60,15 @@ services:
       interval: 10s
       timeout: 10s
       retries: 20
-
-  es02:
-    depends_on:
-      - es01
-    build:
-      context: .
-      dockerfile: elasticsearch/Dockerfile
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    secrets:
-      - source: ca.crt
-        target: /usr/share/elasticsearch/config/certs/ca/ca.crt
-      - source: es02.crt
-        target: /usr/share/elasticsearch/config/certs/es02/es02.crt
-      - source: es02.key
-        target: /usr/share/elasticsearch/config/certs/es02/es02.key
-    volumes:
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-      - es02_data:/usr/share/elasticsearch/data
-    environment:
-      ES_HOST: ${ES_NODE_2_HOST}
-      ES_DISCOVERY_SEED_HOST_1: ${ES_NODE_1_HOST}
-      ES_DISCOVERY_SEED_HOST_2: ${ES_NODE_3_HOST}
-      ES_JAVA_OPTS: "-Xmx${ES_HEAP} -Xms${ES_HEAP}"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
-        ]
-      interval: 10s
-      timeout: 10s
-      retries: 20
-
-  es03:
-    depends_on:
-      - es02
-    build:
-      context: .
-      dockerfile: elasticsearch/Dockerfile
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    secrets:
-      - source: ca.crt
-        target: /usr/share/elasticsearch/config/certs/ca/ca.crt
-      - source: es03.crt
-        target: /usr/share/elasticsearch/config/certs/es03/es03.crt
-      - source: es03.key
-        target: /usr/share/elasticsearch/config/certs/es03/es03.key
-    volumes:
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-      - es03_data:/usr/share/elasticsearch/data
-    environment:
-      ES_HOST: ${ES_NODE_3_HOST}
-      ES_DISCOVERY_SEED_HOST_1: ${ES_NODE_1_HOST}
-      ES_DISCOVERY_SEED_HOST_2: ${ES_NODE_2_HOST}
-      ES_JAVA_OPTS: "-Xmx${ES_HEAP} -Xms${ES_HEAP}"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
-        ]
-      interval: 10s
-      timeout: 10s
-      retries: 120
 
   kibana:
     depends_on:
-      - es01
-      - es02
-      - es03
+      - es
     build:
       context: .
       dockerfile: kibana/Dockerfile
       args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.7.0}
     secrets:
       - source: ca.crt
         target: /usr/share/kibana/config/certs/ca/ca.crt
@@ -156,19 +78,19 @@ services:
     ports:
       - 0.0.0.0:${KIBANA_PORT}:5601
     environment:
-      ES_HOST: https://${ES_NODE_1_HOST}:9200
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+      ES_HOST: https://${ES_HOST:-es}:9200
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-kibana-system-pass}
 
   logstash:
     depends_on:
-      - es01
+      - es
       - es02
       - es03
     build:
       context: .
       dockerfile: logstash/Dockerfile
       args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
+        ELASTIC_VERSION: ${ELASTIC_VERSION:-8.7.0}
     secrets:
       - source: ca.crt
         target: /usr/share/logstash/config/certs/ca/ca.crt
@@ -178,34 +100,23 @@ services:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
       - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
-      - ./logstash/jdbc_drivers:/usr/share/logstash/data/jdbc_drivers:ro
       - logstash_data:/usr/share/logstash/data
     environment:
-      ELASTICSEARCH_HOST: https://${ES_NODE_1_HOST}:9200
-      LOGSTASH_SYSTEM_PASSWORD: ${LOGSTASH_SYSTEM_PASSWORD}
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD}
-      LS_JAVA_OPTS: "-Xmx${LOGSTASH_HEAP} -Xms${LOGSTASH_HEAP}"
+      ELASTICSEARCH_HOST: https://${ES_HOST:-es}:9200
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-logstash-internal-pass}
+      LOGSTASH_SYSTEM_PASSWORD: ${LOGSTASH_SYSTEM_PASSWORD:-logstash-system-pass}
+      LS_JAVA_OPTS: "-Xmx${LOGSTASH_HEAP:-128m} -Xms${LOGSTASH_HEAP:-128m}"
 
 volumes:
   setup:
-  es01_data:
-  es02_data:
-  es03_data:
+  es_data:
   kibana_data:
   logstash_data:
 
 secrets:
   ca.crt:
     file: certs/ca/ca.crt
-  es01.crt:
-    file: certs/es01/es01.crt
-  es01.key:
-    file: certs/es01/es01.key
-  es02.crt:
-    file: certs/es02/es02.crt
-  es02.key:
-    file: certs/es02/es02.key
-  es03.crt:
-    file: certs/es03/es03.crt
-  es03.key:
-    file: certs/es03/es03.key
+  es.crt:
+    file: certs/es/es.crt
+  es.key:
+    file: certs/es/es.key

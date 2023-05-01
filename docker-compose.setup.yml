@@ -5,12 +5,12 @@ services:
   # The service creates Elasticsearch Certificate Authority (CA)
   # and certificates for each ES node signed by that CA.
   #
-  # Generated certificates and keys are stored in ./certs
+  # Generated certificates and keys are stored in folder ./certs
   #
   # If certs already exist then the service exits immediately.
   es_certs:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
-    container_name: setup_es_certs
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.7.0}
+    container_name: es_certs
     command: bash /certs.sh
     user: "0"
     volumes:

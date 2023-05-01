@@ -1,6 +1,4 @@
 /.idea/
 /certs/ca/
-/certs/es01/
-/certs/es02/
-/certs/es03/
+/certs/es/
 /certs/instances.yml
