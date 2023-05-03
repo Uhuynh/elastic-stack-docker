@@ -10,7 +10,7 @@
 cluster.name: elastic-cluster
 
 # The node name defaults to the hostname of the machine when Elasticsearch starts
-node.name: ${ES_HOST}
+node.name: es
 
 network.host: 0.0.0.0
 
@@ -34,21 +34,21 @@ xpack.monitoring.history.duration: 7d
 # Security
 xpack.security.enabled: true
 
-#
+
 # Transport Layer Security (TLS) settings
-#
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup.html#security-basic-setup
 
 # Transport Protocol (inter-node communication)
 # note: production nodes won't start without this feature
 xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.key: certs/${ES_HOST}/${ES_HOST}.key
-xpack.security.transport.ssl.certificate: certs/${ES_HOST}/${ES_HOST}.crt
+xpack.security.transport.ssl.key: certs/es/es.key
+xpack.security.transport.ssl.certificate: certs/es/es.crt
 xpack.security.transport.ssl.certificate_authorities: certs/ca/ca.crt
 
 # HTTP Protocol (communication between ES and Kibana / Logstash)
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
-xpack.security.http.ssl.key: certs/${ES_HOST}/${ES_HOST}.key
-xpack.security.http.ssl.certificate: certs/${ES_HOST}/${ES_HOST}.crt
+xpack.security.http.ssl.key: certs/es/es.key
+xpack.security.http.ssl.certificate: certs/es/es.crt
 xpack.security.http.ssl.certificate_authorities: certs/ca/ca.crt
